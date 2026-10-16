@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>SALUS WEB · ABM %OM por Empresa</title>
+<!-- %OM = Objetivo Mensual -->
+<style>
+  :root{
+    --navy:#1a3a8f;
+    --navy-dark:#122a6b;
+    --navy-light:#2c4fa8;
+    --lavender:#c9cff0;
+    --lavender-text:#2a2f5f;
+    --border:#b7bcd6;
+    --field-border:#a9adc7;
+    --bg:#eef0fa;
+    --panel-bg:#ffffff;
+    --text:#26283a;
+    --text-muted:#6b6f8c;
+    --amber:#f5a623;
+    --good:#0ca30c;
+    --critical:#d03b3b;
+    --warn:#c98500;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI", Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-size:13px;
+  }
+  /* ---------- Top chrome bar (Mesa Operativa + Cerrar sesión) ---------- */
+  .topbar-v2{
+    display:flex;align-items:center;justify-content:flex-end;gap:10px;
+    background:#ffffff;border-bottom:1px solid #d7dae8;padding:10px 16px;
+  }
+  .mesa-operativa-label{font-size:12px;font-weight:700;color:var(--navy-dark);letter-spacing:.3px;white-space:nowrap;}
+  .mesa-operativa-select{
+    border:1px solid var(--field-border);border-radius:4px;padding:6px 10px;
+    font-size:12px;font-weight:600;color:var(--text);background:#fff;min-width:230px;
+  }
+  .btn-cerrar-sesion{
+    display:inline-flex;align-items:center;gap:6px;background:var(--navy-light);color:#fff;
+    border:none;border-radius:4px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+  }
+  .btn-cerrar-sesion:hover{background:var(--navy);}
+  /* ---------- (legacy chrome, no longer used on esta pantalla) ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    background:#ffffff;border-bottom:1px solid #d7dae8;padding:6px 12px;
+  }
+  .topbar-left{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+    border-radius:4px;color:#5b5f7a;cursor:pointer;font-size:14px;
+  }
+  .icon-btn:hover{background:#eef0fa;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .fechas-field{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
+  .fechas-field input{
+    border:1px solid var(--field-border);border-radius:4px;padding:4px 8px;font-size:12px;color:var(--text);
+    width:190px;background:#fff;
+  }
+  .zone-tabs{display:flex;gap:2px;}
+  .zone-tab{padding:4px 9px;border-radius:3px;font-size:11px;font-weight:600;color:#7d81a0;cursor:pointer;}
+  .zone-tab.active{background:var(--navy);color:#fff;}
+  .clock{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+  .user-badge{
+    display:flex;align-items:center;gap:6px;background:var(--navy);color:#fff;border-radius:16px;
+    padding:3px 10px 3px 3px;font-size:11px;font-weight:600;
+  }
+  .user-avatar{
+    width:22px;height:22px;border-radius:50%;background:#3d5cc4;display:flex;align-items:center;justify-content:center;font-size:10px;
+  }
+  /* ---------- Title bar ---------- */
+  .titlebar{
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-dark) 100%);
+    color:#fff;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;
+  }
+  .titlebar h1{font-size:16px;margin:0;font-weight:600;}
+  .titlebar .subtitle{font-size:11px;color:#c7d1f2;margin-top:2px;}
+  .role-tag{
+    display:flex;align-items:center;gap:8px;font-size:11px;background:rgba(255,255,255,0.12);
+    padding:5px 12px;border-radius:14px;
+  }
+  .status-dot{width:8px;height:8px;border-radius:50%;background:#5bd65b;}
+  /* ---------- Layout ---------- */
+  .page{padding:16px 20px 40px;max-width:1400px;margin:0 auto;}
+  .panel{background:var(--panel-bg);border:1px solid var(--border);border-radius:6px;margin-bottom:16px;overflow:hidden;}
+  .panel-header{
+    background:var(--lavender);color:var(--lavender-text);font-weight:700;font-size:12.5px;
+    padding:8px 14px;letter-spacing:.2px;display:flex;align-items:center;justify-content:space-between;
+  }
+  .panel-body{padding:16px;}
+  /* ---------- Filters ---------- */
+  .filters-grid{display:grid;grid-template-columns:1fr 1fr 1.2fr auto auto;gap:14px;align-items:end;}
+  .field{position:relative;}
+  .field label{
+    position:absolute;top:-8px;left:10px;background:#fff;padding:0 5px;
+    font-size:10.5px;color:var(--text-muted);font-weight:600;
+  }
+  .field select, .field input{
+    width:100%;border:1px solid var(--field-border);border-radius:5px;padding:9px 10px;
+    font-size:12.5px;color:var(--text);background:#fff;
+  }
+  .field select:focus, .field input:focus{outline:2px solid var(--navy-light);outline-offset:0;}
+  .btn{border:none;border-radius:16px;padding:9px 20px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-light);}
+  .btn-outline{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  .btn-outline:hover{background:#eef0fa;}
+  .btn-sm{padding:5px 12px;font-size:11.5px;border-radius:12px;}
+  .btn-ghost{background:transparent;color:var(--navy);border:none;font-weight:600;cursor:pointer;font-size:12px;}
+  .btn-ghost:hover{text-decoration:underline;}
+  /* ---------- Table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{
+    text-align:left;background:#f2f3fa;color:var(--text-muted);font-size:11px;text-transform:uppercase;
+    letter-spacing:.3px;padding:9px 12px;border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:10px 12px;border-bottom:1px solid #e7e9f3;font-variant-numeric:tabular-nums;}
+  tbody tr.main-row:hover{background:#f7f8fd;}
+  .empresa-cell{display:flex;align-items:center;gap:8px;font-weight:600;}
+  .expand-btn{
+    width:20px;height:20px;border-radius:4px;border:1px solid var(--field-border);background:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--text-muted);
+    transition:transform .15s;
+  }
+  .expand-btn.open{transform:rotate(90deg);}
+  .col-num{text-align:right;}
+  .pm-value{font-weight:700;color:var(--navy-dark);font-size:14px;}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;font-size:11.5px;font-weight:700;}
+  .badge.vigente{background:#e5f7e5;color:var(--good);}
+  .badge.programado{background:#fff3e0;color:var(--warn);}
+  .badge.vencido{background:#eef0f3;color:var(--text-muted);}
+  .badge-dot{width:8px;height:8px;border-radius:50%;}
+  .badge.vigente .badge-dot{background:var(--good);}
+  .badge.programado .badge-dot{background:var(--warn);}
+  .badge.vencido .badge-dot{background:#9a9dae;}
+  .history-row td{background:#f9f9fd;padding:0;border-bottom:1px solid #e7e9f3;}
+  .history-wrap{padding:6px 12px 14px 46px;}
+  .history-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e2e4f0;border-radius:5px;overflow:hidden;}
+  .history-table th{
+    background:#eef0fa;color:var(--text-muted);font-size:10.5px;text-transform:uppercase;padding:6px 10px;text-align:left;
+  }
+  .history-table td{padding:7px 10px;border-top:1px solid #eef0f7;font-size:12px;}
+  .history-table tr.current td{background:#f1f8f1;}
+  .version-tag{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy-light);padding:2px 7px;border-radius:10px;}
+  .actions-cell{display:flex;gap:8px;}
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(20,25,50,.45);display:none;align-items:center;justify-content:center;z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:#fff;border-radius:8px;width:460px;max-width:92vw;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.25);
+    max-height:92vh;display:flex;flex-direction:column;
+  }
+  .modal-header{
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-dark) 100%);color:#fff;padding:12px 18px;
+    display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;
+  }
+  .modal-header h2{font-size:14px;margin:0;font-weight:600;}
+  .modal-close{cursor:pointer;font-size:16px;color:#dfe4fb;}
+  .modal-body{padding:14px 18px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1 1 auto;min-height:0;}
+  .modal-footer{padding:10px 18px 14px;display:flex;justify-content:flex-end;gap:10px;flex:0 0 auto;}
+  .helper-text{font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.35;}
+  .info-box{
+    font-size:11px;background:#eef2fd;border:1px solid #cdd7f5;border-radius:6px;padding:7px 10px;color:#33396b;
+    display:flex;gap:8px;align-items:flex-start;line-height:1.4;
+  }
+  .info-box > span:first-child{flex:0 0 auto;}
+  .info-box > span:last-child{flex:1 1 auto;}
+  .om-warning{
+    font-size:11px;background:#fff4e5;border:1px solid #f5c26b;border-radius:6px;padding:7px 10px;color:#8a5a00;
+    display:flex;gap:8px;align-items:flex-start;line-height:1.4;
+  }
+  .om-warning.critico{background:#fbe8e8;border-color:#e9a3a3;color:#8a1f1f;}
+  .om-warning > span:first-child{flex:0 0 auto;}
+  .om-warning > span:last-child{flex:1 1 auto;}
+  /* ---------- Ayuda: los textos explicativos viven detrás de un botón "?", no siempre
+     visibles, para no saturar la pantalla. ---------- */
+  .help-wrap{position:relative;display:inline-flex;}
+  .help-btn{
+    width:18px;height:18px;flex:0 0 auto;border-radius:50%;border:1px solid rgba(255,255,255,.7);
+    background:rgba(255,255,255,.14);color:#fff;font-size:11px;font-weight:700;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .help-btn:hover{background:rgba(255,255,255,.28);}
+  .help-btn:focus-visible{outline:2px solid #fff;outline-offset:1px;}
+  .help-btn.help-btn-muted{
+    border-color:var(--navy-light);background:#eef2fd;color:var(--navy);
+  }
+  .help-btn.help-btn-muted:hover{background:var(--navy-light);color:#fff;}
+  .help-popover{
+    display:none;position:absolute;top:24px;right:0;z-index:70;width:340px;
+    background:#eef2fd;border:1px solid #cdd7f5;border-radius:6px;padding:10px 12px;
+    font-size:11.5px;line-height:1.5;color:#33396b;font-weight:400;text-align:left;
+    box-shadow:0 8px 22px rgba(20,30,90,.22);
+  }
+  .help-popover.open{display:block;}
+  .help-popover p{margin:0 0 8px;}
+  .help-popover p:last-child{margin-bottom:0;}
+  .help-popover strong{color:#1f2450;}
+  footer.note{
+    font-size:11px;color:var(--text-muted);background:#fff8e6;border:1px solid #f0d99a;border-radius:6px;
+    padding:10px 14px;margin-top:4px;
+  }
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f2340;color:#fff;padding:10px 20px;
+    border-radius:20px;font-size:12.5px;box-shadow:0 6px 18px rgba(0,0,0,.25);display:none;z-index:60;
+  }
+  .toast.show{display:block;}
+
+  /* ---------- "Listado clásico" (estilo ABM de Filial / Facturación de SALUS WEB) ---------- */
+  :root{
+    --lf-blue-1:#4d93c9;
+    --lf-blue-2:#3f7fb5;
+    --lf-blue-3:#5ba3d6;
+    --lf-blue-header:#3a76a8;
+    --lf-blue-border:#2f6690;
+    --lf-row-alt:#eef6fc;
+    --lf-selected:#fbe1e8;
+    --lf-selected-border:#e58fa6;
+  }
+  .lf-wrap{
+    border:1px solid var(--lf-blue-border);border-radius:4px;overflow:hidden;margin-bottom:12px;
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .lf-title{
+    background:linear-gradient(180deg,var(--lf-blue-3) 0%, var(--lf-blue-2) 100%);
+    color:#fff;text-align:center;font-weight:700;font-size:13px;letter-spacing:.4px;
+    padding:9px 12px;text-transform:uppercase;
+  }
+
+  /* ---------- Formulario "registro clásico" (estilo ABM de Coseguros de SALUS WEB) ----------
+     Usado en los modales Crear/Editar y Ver de esta pantalla: título en franja celeste, y un
+     formulario en tabla con la etiqueta a la izquierda y el campo a la derecha, todo bordeado. */
+  .reg-modal-header{
+    background:linear-gradient(180deg,var(--lf-blue-3) 0%, var(--lf-blue-2) 100%);
+    color:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;
+  }
+  .reg-modal-header h2{font-size:12.5px;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+  .reg-modal-close{cursor:pointer;font-size:15px;color:#eaf3fb;}
+  .reg-modal-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1 1 auto;min-height:0;}
+  .reg-table{width:100%;border-collapse:collapse;border:1px solid var(--lf-blue-border);}
+  .reg-table td{border:1px solid #cfe3f2;padding:5px 10px;font-size:12px;vertical-align:middle;}
+  .reg-table td.reg-label{background:#f2f8fc;font-weight:700;color:var(--text);width:160px;white-space:nowrap;}
+  .reg-table td.reg-field{background:#fff;color:var(--text);}
+  .reg-table td.reg-field.reg-empty{color:var(--text-muted);}
+  .reg-field-input, .reg-field select, .reg-field input{
+    width:100%;max-width:320px;border:1px solid var(--lf-blue-2);border-radius:3px;padding:5px 8px;
+    font-size:12px;color:var(--text);background:#fff;
+  }
+  .reg-field select:disabled, .reg-field input:disabled{background:#f0f1f4;color:#8a8ea3;}
+  .reg-modal-footer{padding:4px 16px 14px;display:flex;justify-content:flex-start;gap:10px;flex:0 0 auto;}
+  .reg-btn{border:1px solid var(--lf-blue-border);border-radius:3px;padding:7px 20px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .reg-btn-primary{background:linear-gradient(180deg,var(--lf-blue-3),var(--lf-blue-2));color:#fff;}
+  .reg-btn-primary:hover{filter:brightness(1.05);}
+  .reg-btn-outline{background:#fff;color:var(--lf-blue-2);}
+  .reg-btn-outline:hover{background:#eef6fc;}
+  .reg-required{color:var(--critical);}
+  .reg-grid{border:1px solid var(--lf-blue-border);border-radius:4px;overflow:hidden;}
+  .reg-grid thead th{background:var(--lf-blue-header);color:#fff;font-weight:600;}
+  .reg-grid tbody tr:nth-child(even){background:var(--lf-row-alt);}
+  .reg-grid tbody tr.current td{background:#f1f8f1;}
+  .reg-lote-badge{font-size:11.5px;font-weight:700;color:var(--lf-blue-2);}
+  .reg-btn-danger{background:var(--critical);color:#fff;border-color:#a92a2a;}
+  .reg-btn-danger:hover{filter:brightness(1.08);}
+  .reg-btn[disabled]{opacity:.5;cursor:not-allowed;filter:none;}
+  /* ---------- Grupo de grilla por Tipo de Servicio (Carga masiva y Editar versión):
+     cuando una carga o edición abarca más de un Tipo de Servicio a la vez, cada uno se
+     muestra en su propia mini-grilla con un título, para dejar en claro que el %OM de
+     cada Tipo de Servicio se define y valida por separado. ---------- */
+  .reg-grupo-servicio{margin-bottom:12px;}
+  .reg-grupo-servicio:last-child{margin-bottom:0;}
+  .reg-grupo-servicio-titulo{
+    background:#eef2fd;color:var(--navy-dark);font-weight:700;font-size:11px;text-transform:uppercase;
+    letter-spacing:.3px;padding:6px 10px;border:1px solid var(--lf-blue-border);border-bottom:none;
+    border-radius:4px 4px 0 0;
+  }
+  .reg-grupo-servicio .reg-grid{border-radius:0 0 4px 4px;}
+  /* ---------- Selector de Tipo de Servicio de doble lista (estilo "Crear registro de
+     Facturación" real de SALUS WEB): disponibles a la izquierda, seleccionados a la
+     derecha, con flechas para mover una selección o todos de una vez. ---------- */
+  .dual-listbox{display:flex;align-items:stretch;gap:8px;max-width:480px;}
+  .dual-listbox select{
+    flex:1 1 0;min-width:0;border:1px solid var(--lf-blue-2);border-radius:3px;
+    font-size:12px;padding:2px;background:#fff;color:var(--text);
+  }
+  .dual-listbox select option{padding:3px 6px;}
+  .dual-listbox-btns{display:flex;flex-direction:column;justify-content:center;gap:4px;}
+  .dlb-btn{
+    width:30px;height:24px;border:1px solid var(--lf-blue-border);border-radius:3px;
+    background:linear-gradient(180deg,var(--lf-blue-3),var(--lf-blue-2));color:#fff;
+    font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .dlb-btn:hover{filter:brightness(1.08);}
+  .lf-pagination{
+    background:linear-gradient(180deg,var(--lf-blue-1) 0%, var(--lf-blue-2) 100%);
+    display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;
+  }
+  .lf-pg-btn{
+    min-width:24px;height:24px;padding:0 6px;border-radius:3px;border:1px solid rgba(255,255,255,.5);
+    background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .lf-pg-btn:hover{background:rgba(255,255,255,.3);}
+  .lf-pg-btn.active{background:#fff;color:var(--lf-blue-2);}
+  .lf-pg-btn[disabled]{opacity:.4;cursor:default;}
+  .lf-pg-size{
+    height:24px;border-radius:3px;border:1px solid rgba(255,255,255,.5);background:#fff;color:var(--lf-blue-2);
+    font-size:11px;font-weight:700;padding:0 4px;
+  }
+  .lf-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;}
+  .lf-table th{
+    background:var(--lf-blue-header);color:#fff;font-weight:600;font-size:11.5px;padding:8px 10px;
+    text-align:center;border-right:1px solid rgba(255,255,255,.2);white-space:nowrap;cursor:pointer;user-select:none;
+  }
+  .lf-table th:last-child{border-right:none;cursor:default;}
+  .lf-sort{display:inline-flex;flex-direction:column;margin-left:4px;font-size:7px;line-height:6px;vertical-align:middle;opacity:.7;}
+  .lf-sort.active{opacity:1;color:#ffe98a;}
+  .lf-filter-row td{
+    background:var(--lf-blue-1);padding:5px 7px;border-right:1px solid rgba(255,255,255,.15);
+  }
+  .lf-filter-row td:last-child{border-right:none;}
+  .lf-filter-row input{
+    width:100%;border:1px solid #cfe3f2;border-radius:3px;padding:4px 6px;font-size:11.5px;background:#fff;color:var(--text);
+  }
+  .lf-filter-row select{
+    width:100%;border:1px solid #cfe3f2;border-radius:3px;padding:4px 4px;font-size:11.5px;background:#fff;color:var(--text);
+  }
+  .lf-toggle-group{display:flex;gap:3px;}
+  .lf-toggle{
+    flex:1;border:1px solid #cfe3f2;background:#fff;color:var(--lf-blue-2);font-size:10.5px;font-weight:700;
+    padding:4px 0;border-radius:3px;cursor:pointer;
+  }
+  .lf-toggle.active{background:#e8f2fb;border-color:var(--lf-blue-2);}
+  .lf-table tbody td{
+    padding:9px 10px;text-align:center;border-bottom:1px solid #dbe7f1;color:var(--text);
+  }
+  .lf-table tbody tr:nth-child(even){background:var(--lf-row-alt);}
+  .lf-table tbody tr:hover{background:#e3f0fa;cursor:pointer;}
+  .lf-table tbody tr.selected{background:var(--lf-selected) !important;}
+  .lf-table tbody tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--lf-selected-border);}
+  .lf-empty-row td{padding:22px;color:var(--text-muted);font-style:italic;}
+  .lf-actions-bar{display:flex;gap:10px;margin-top:2px;}
+  .lf-action-btn{
+    display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,var(--lf-blue-3),var(--lf-blue-2));
+    color:#fff;border:1px solid var(--lf-blue-border);border-radius:4px;padding:7px 16px;font-size:12px;font-weight:600;
+    cursor:pointer;
+  }
+  .lf-action-btn:hover{filter:brightness(1.06);}
+  .lf-action-btn[disabled]{opacity:.45;cursor:not-allowed;filter:none;}
+</style>
+</head>
+<body>
+
+  <!-- TOP CHROME BAR -->
+  <div class="topbar-v2">
+    <span class="mesa-operativa-label">MESA OPERATIVA</span>
+    <select class="mesa-operativa-select">
+      <option>Mesa Operativa Metropolitana</option>
+      <option>Mesa Operativa Mar del Plata</option>
+      <option>Mesa Operativa Mendoza</option>
+      <option>Mesa Operativa Norpatagónica</option>
+      <option>Mesa Operativa Rosario</option>
+    </select>
+    <button class="btn-cerrar-sesion">⏻ Cerrar sesión (FI27451778)</button>
+  </div>
+
+  <!-- TITLE BAR -->
+  <div class="titlebar">
+    <div>
+      <h1>ABM de %OM por Empresa de Ambulancia</h1>
+      <div class="subtitle">Configuración versionada del Objetivo Mensual (%OM) por prestador · Pantalla 2 de 3</div>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- LISTADO (estilo clásico SALUS WEB: título + paginación + filtros embebidos + acciones) -->
+    <div class="lf-wrap">
+      <div class="lf-title">Listado de %OM por Empresa</div>
+      <div class="lf-pagination" id="pagTop"></div>
+      <table class="lf-table">
+        <thead>
+          <tr id="headerRow"></tr>
+          <tr class="lf-filter-row" id="filterRow"></tr>
+        </thead>
+        <tbody id="tablaEmpresas"></tbody>
+      </table>
+      <div class="lf-pagination" id="pagBottom"></div>
+    </div>
+
+    <div class="lf-actions-bar">
+      <button class="lf-action-btn" onclick="abrirModalMasivo()">🆕 Nueva Versión</button>
+      <button class="lf-action-btn" id="btnVer" disabled onclick="abrirVer()">🔍 Ver</button>
+      <button class="lf-action-btn" onclick="abrirModalEditarVersion()">✎ Editar versión</button>
+      <button class="lf-action-btn" onclick="abrirModalBorrarVersion()">🗑 Borrar versión</button>
+      <button class="lf-action-btn" style="margin-left:auto;" onclick="abrirModalAyuda()">❓ Ayuda</button>
+    </div>
+
+  </div>
+
+  <!-- MODAL: Ayuda — todo el texto explicativo que antes estaba siempre visible al pie de la
+       pantalla, ahora agrupado acá detrás del botón "❓ Ayuda" para no saturar el listado. -->
+  <div class="modal-overlay" id="modalAyudaOverlay">
+    <div class="modal" style="width:640px;">
+      <div class="reg-modal-header">
+        <h2>❓ Ayuda · Cómo funciona este ABM</h2>
+        <span class="reg-modal-close" onclick="cerrarModalAyuda()">✕</span>
+      </div>
+      <div class="reg-modal-body" style="font-size:12px;line-height:1.55;color:var(--text);">
+        <div><strong>Empresa:</strong> se pueden dar de alta todas las empresas con faceta / tipo de prestador "Am" (ambulancia).
+        Cada versión de %OM queda con <strong>fecha de vigencia</strong>: la versión vigente anterior de esa empresa, para el mismo Tipo de Servicio, se cierra automáticamente el día previo a la nueva fecha de inicio, sin perder el historial (por ejemplo, si Acudir pasara de 60% a 51% en Emergencia a partir de una fecha dada, la versión del 60% quedaría cerrada el día previo).</div>
+        <div><strong>Tipo de Servicio:</strong> todo %OM se define a nivel <strong>Tipo de Servicio</strong> (por ejemplo, Emergencia o Traslado). Cada Tipo de Servicio es un universo de %OM independiente de los demás: la suma de los %OM vigentes de todas las empresas no debe superar el 100% <strong>dentro de ese mismo Tipo de Servicio</strong>, pero una empresa puede tener %OM cargado a la vez en varios Tipos de Servicio distintos (por ejemplo, Acudir tiene 60% en Emergencia y 70% en Traslado, cargados por separado).
+        Una empresa puede no tener todavía ningún %OM cargado para algún Tipo de Servicio puntual (por ejemplo, URG no tiene Traslado cargado): es un estado válido, y no le impide tener %OM en otros Tipos de Servicio. No aparece en el listado para ese Tipo de Servicio hasta que se le dé de alta una versión ahí desde <strong>Nueva Versión</strong>, que es la única forma de cargar versiones nuevas.</div>
+        <div><strong>Nueva Versión:</strong> permite cargar, en una misma tanda, una nueva versión de %OM para uno o varios Tipos de Servicio a la vez (por ejemplo, Emergencia y Traslado juntos), todas vigentes desde la misma fecha — pero el %OM se define por separado para cada Tipo de Servicio elegido, en su propia grilla de Empresa / %OM actual / %OM nuevo. El control del 100% se aplica sobre el total combinado de la carga dentro de cada Tipo de Servicio por separado. Toda la carga (con todos los Tipos de Servicio que incluya) queda identificada con un único <strong>N° de versión</strong> correlativo, visible en la columna "N° Versión" del listado (la carga inicial de datos es la versión N° 1).</div>
+        <div><strong>Editar versión:</strong> usa el mismo diseño que Nueva Versión — corrige, para todas las empresas de un mismo N° de versión a la vez (agrupadas por Tipo de Servicio), su %OM y/o su fecha de vigencia (no genera una versión nueva, ni cambia el N° de versión ni el o los Tipos de Servicio). El control del 100% se aplica igual que en Nueva Versión, por separado en cada Tipo de Servicio incluido.</div>
+        <div><strong>Borrar versión:</strong> elimina de una sola vez <strong>todos los registros que comparten un mismo N° de versión</strong> (por ejemplo, toda una carga, con todos sus Tipos de Servicio), en todas las empresas donde se haya cargado esa versión. Si a alguna empresa la deja sin ningún %OM cargado para algún Tipo de Servicio puntual, el sistema lo avisa antes de confirmar (ese estado es válido: es el mismo con el que arranca una empresa antes de su primera carga en ese Tipo de Servicio; puede seguir teniendo %OM cargado en otros).</div>
+      </div>
+      <div class="reg-modal-footer">
+        <button class="reg-btn reg-btn-primary" onclick="cerrarModalAyuda()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Editar versión completa (edita en bloque todos los registros de un N° Versión;
+       mismo diseño que "Nueva Versión": Tipo de Servicio + fecha + N° de versión arriba, y una
+       mini-grilla Empresa / %OM actual / %OM nuevo por cada Tipo de Servicio que incluya) -->
+  <div class="modal-overlay" id="modalEditarVersionOverlay">
+    <div class="modal" style="width:680px;">
+      <div class="reg-modal-header">
+        <h2>Editar versión completa de %OM</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="help-wrap">
+            <button type="button" class="help-btn" onclick="toggleHelp('helpEditar', event)">?</button>
+            <div class="help-popover" id="helpEditar" style="right:22px;">
+              Se editan de una sola vez los valores de <strong>todas las empresas que comparten este N° de versión</strong> (no se crea una versión nueva ni cambia el N° de versión). El %OM se define por separado para cada Tipo de Servicio incluido en esta versión, y el control del 100% se aplica igual que en Nueva Versión, dentro de cada uno.
+            </div>
+          </span>
+          <span class="reg-modal-close" onclick="cerrarModalEditarVersion()">✕</span>
+        </div>
+      </div>
+      <div class="reg-modal-body">
+        <table class="reg-table">
+          <tr>
+            <td class="reg-label">Versión a editar: <span class="reg-required">*</span></td>
+            <td class="reg-field"><select id="editVersionSelect" onchange="actualizarGridEditarVersion()"></select></td>
+          </tr>
+          <tr>
+            <td class="reg-label">Vigente desde: <span class="reg-required">*</span></td>
+            <td class="reg-field"><input type="date" id="editDesde" onchange="actualizarAvisoEditarVersion()"></td>
+          </tr>
+          <tr>
+            <td class="reg-label">N° de versión:</td>
+            <td class="reg-field"><span class="reg-lote-badge" id="editLoteNumero">—</span></td>
+          </tr>
+        </table>
+        <div style="max-height:320px;overflow-y:auto;">
+          <div id="editGridsContainer"><!-- filled by JS: una mini-grilla por Tipo de Servicio --></div>
+        </div>
+        <div id="editResumenTotal" style="font-size:12.5px;font-weight:700;"></div>
+        <div id="editOmWarning" class="om-warning" style="display:none;"></div>
+      </div>
+      <div class="reg-modal-footer">
+        <button class="reg-btn reg-btn-primary" onclick="guardarEdicionVersion()">Guardar cambios</button>
+        <button class="reg-btn reg-btn-outline" onclick="cerrarModalEditarVersion()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Ver historial (solo lectura, estilo "registro clásico" ABM Coseguros) -->
+  <div class="modal-overlay" id="verOverlay">
+    <div class="modal" style="width:640px;">
+      <div class="reg-modal-header">
+        <h2 id="verTitulo">Ver registro de %OM</h2>
+        <span class="reg-modal-close" onclick="cerrarVer()">✕</span>
+      </div>
+      <div class="reg-modal-body">
+        <table class="reg-table" id="verTabla">
+          <!-- filled by JS -->
+        </table>
+      </div>
+      <div class="reg-modal-footer">
+        <button class="reg-btn reg-btn-primary" onclick="cerrarVer()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Carga masiva de %OM (varias empresas, una misma fecha de vigencia; estilo "registro clásico") -->
+  <div class="modal-overlay" id="modalMasivoOverlay">
+    <div class="modal" style="width:680px;">
+      <div class="reg-modal-header">
+        <h2>Nueva Versión · %OM por Tipo de Servicio</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="help-wrap">
+            <button type="button" class="help-btn" onclick="toggleHelp('helpMasivo', event)">?</button>
+            <div class="help-popover" id="helpMasivo" style="right:22px;">
+              <p>Pasá a la derecha uno o varios Tipos de Servicio para cargarles %OM en la misma tanda (por ejemplo, Emergencia y Traslado a la vez). El %OM se define por separado para cada Tipo de Servicio elegido, más abajo.</p>
+              <p>El %OM nuevo arranca en 0 para todas las empresas; ajustá el valor de las que querés actualizar y dejá en blanco (borrá el campo) las que no cambian en esta carga, para excluirlas. A cada empresa con un valor cargado se le crea una nueva versión vigente desde la fecha indicada, para el Tipo de Servicio de su grilla — su versión anterior en ese mismo Tipo de Servicio se cierra automáticamente el día previo. Todas las empresas actualizadas en esta carga, en todos los Tipos de Servicio incluidos, comparten el mismo N° de versión y la misma fecha de vigencia.</p>
+              <p><strong>El total de %OM vigente tiene que sumar exactamente 100% en cada Tipo de Servicio incluido</strong> — si suma menos o más, no se puede guardar.</p>
+            </div>
+          </span>
+          <span class="reg-modal-close" onclick="cerrarModalMasivo()">✕</span>
+        </div>
+      </div>
+      <div class="reg-modal-body">
+        <table class="reg-table">
+          <tr>
+            <td class="reg-label">Tipo de Servicio: <span class="reg-required">*</span></td>
+            <td class="reg-field">
+              <div class="dual-listbox">
+                <select id="masServicioDisponibles" multiple size="4" ondblclick="dlbMover('disponibles',false)"></select>
+                <div class="dual-listbox-btns">
+                  <button type="button" class="dlb-btn" onclick="dlbMover('disponibles',false)" title="Pasar los seleccionados a la derecha">→</button>
+                  <button type="button" class="dlb-btn" onclick="dlbMover('disponibles',true)" title="Pasar todos a la derecha">⇉</button>
+                  <button type="button" class="dlb-btn" onclick="dlbMover('seleccionadas',false)" title="Devolver los seleccionados a la izquierda">←</button>
+                  <button type="button" class="dlb-btn" onclick="dlbMover('seleccionadas',true)" title="Devolver todos a la izquierda">⇇</button>
+                </div>
+                <select id="masServicioSeleccionados" multiple size="4" ondblclick="dlbMover('seleccionadas',false)"></select>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="reg-label">Vigente desde: <span class="reg-required">*</span></td>
+            <td class="reg-field"><input type="date" id="masDesde" onchange="actualizarFechaMasiva()"></td>
+          </tr>
+          <tr>
+            <td class="reg-label">N° de versión de esta carga:</td>
+            <td class="reg-field"><span class="reg-lote-badge" id="masLoteNumero">—</span></td>
+          </tr>
+        </table>
+        <div style="max-height:320px;overflow-y:auto;">
+          <div id="masGridsContainer"><!-- filled by JS: una mini-grilla por Tipo de Servicio --></div>
+        </div>
+        <div id="masResumenTotal" style="font-size:13px;font-weight:700;"></div>
+      </div>
+      <div class="reg-modal-footer">
+        <button class="reg-btn reg-btn-primary" onclick="guardarMasivo()">Guardar</button>
+        <button class="reg-btn reg-btn-outline" onclick="cerrarModalMasivo()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Borrar versión completa (elimina de una vez todos los registros de un N° Versión) -->
+  <div class="modal-overlay" id="modalBorrarVersionOverlay">
+    <div class="modal" style="width:680px;">
+      <div class="reg-modal-header">
+        <h2>Borrar versión completa de %OM</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="help-wrap">
+            <button type="button" class="help-btn" onclick="toggleHelp('helpBorrar', event)">?</button>
+            <div class="help-popover" id="helpBorrar" style="right:22px;">
+              Se eliminan de una sola vez <strong>todos los registros</strong> que comparten ese N° de versión, en todas las empresas donde se haya cargado. Si a alguna empresa la deja sin ninguna versión de %OM cargada, se avisa antes de confirmar — podés darle de alta una versión nueva cuando quieras desde "Nueva Versión".
+            </div>
+          </span>
+          <span class="reg-modal-close" onclick="cerrarModalBorrarVersion()">✕</span>
+        </div>
+      </div>
+      <div class="reg-modal-body">
+        <table class="reg-table">
+          <tr>
+            <td class="reg-label">Versión a eliminar: <span class="reg-required">*</span></td>
+            <td class="reg-field"><select id="borrarVersionSelect" onchange="actualizarPreviewBorrarVersion()"></select></td>
+          </tr>
+        </table>
+        <div style="max-height:280px;overflow-y:auto;">
+          <table class="history-table reg-grid">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Tipo de Servicio</th>
+                <th style="text-align:right;">%OM</th>
+                <th style="text-align:right;">Vigente desde</th>
+              </tr>
+            </thead>
+            <tbody id="borrarVersionPreviewBody"><!-- filled by JS --></tbody>
+          </table>
+        </div>
+        <div id="borrarVersionResumen" style="font-size:12.5px;font-weight:700;"></div>
+        <div id="borrarVersionWarning" class="om-warning" style="display:none;"></div>
+      </div>
+      <div class="reg-modal-footer">
+        <button class="reg-btn reg-btn-danger" id="btnConfirmarBorrarVersion" onclick="confirmarBorrarVersion()">Eliminar versión completa</button>
+        <button class="reg-btn reg-btn-outline" onclick="cerrarModalBorrarVersion()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmación de borrado (reemplaza el confirm() nativo del navegador, que
+       algunos entornos embebidos bloquean o ignoran sin avisar) -->
+  <div class="modal-overlay" id="modalConfirmarBorrarOverlay">
+    <div class="modal" style="width:460px;">
+      <div class="reg-modal-header">
+        <h2>Confirmar eliminación</h2>
+        <span class="reg-modal-close" onclick="cerrarModalConfirmarBorrar()">✕</span>
+      </div>
+      <div class="reg-modal-body">
+        <div id="confirmarBorrarMensaje" style="font-size:13px;line-height:1.5;"></div>
+      </div>
+      <div class="reg-modal-footer">
+        <button class="reg-btn reg-btn-danger" onclick="ejecutarBorrarVersion()">Sí, eliminar</button>
+        <button class="reg-btn reg-btn-outline" onclick="cerrarModalConfirmarBorrar()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  // Tipo de Servicio: dato maestro real de SALUS WEB. Un %OM se define siempre a nivel
+  // Tipo de Servicio (por ejemplo, Emergencia o Traslado) — cada uno es su propio "universo"
+  // de %OM: el control de que la suma no supere el 100% se aplica de forma independiente
+  // dentro de cada Tipo de Servicio.
+  const NOMBRES_SERVICIO = ["Emergencia", "Traslado"];
+  // Forma plural de cada Tipo de Servicio, usada en el indicador de totales de Nueva Versión
+  // ("Total de Emergencias: X% - Total de Traslados: Y%").
+  const PLURAL_SERVICIO = { Emergencia: "Emergencias", Traslado: "Traslados" };
+
+  // Agrupa una lista de items (registros, o {r:registro,...} como en "cambios") por su
+  // Tipo de Servicio. "obtenerServicio" recibe un item y devuelve el nombre del servicio
+  // correspondiente (r.servicio, o c.r.servicio).
+  function agruparPorServicio(items, obtenerServicio){
+    const grupos = {};
+    items.forEach(item=>{
+      const servicio = obtenerServicio(item);
+      (grupos[servicio] = grupos[servicio] || { servicio, items: [] }).items.push(item);
+    });
+    return Object.values(grupos);
+  }
+
+  // ---------- Selector de Tipo de Servicio de doble lista (Carga masiva) ----------
+  // Estado del widget: qué Tipos de Servicio están disponibles (izquierda) y cuáles fueron
+  // pasados a la derecha (seleccionados) para esta carga masiva. Una misma carga masiva
+  // puede tocar uno o varios Tipos de Servicio a la vez (por ejemplo, Emergencia y Traslado
+  // juntos) — cada uno mantiene su propia mini-grilla de %OM y se valida por separado.
+  let masDisponibles = [];
+  let masSeleccionadas = [];
+
+  function renderDualListboxMasivo(){
+    document.getElementById('masServicioDisponibles').innerHTML =
+      masDisponibles.map(s=>`<option value="${s}">${s}</option>`).join('');
+    document.getElementById('masServicioSeleccionados').innerHTML =
+      masSeleccionadas.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+
+  // Mueve los Tipos de Servicio elegidos (o todos) entre las dos listas, manteniendo siempre
+  // el orden maestro de NOMBRES_SERVICIO en cada una.
+  function dlbMover(origen, todas){
+    const maestro = NOMBRES_SERVICIO;
+    if(origen === 'disponibles'){
+      const dispEl = document.getElementById('masServicioDisponibles');
+      const mover = todas ? masDisponibles.slice() : Array.from(dispEl.selectedOptions).map(o=>o.value);
+      masDisponibles = masDisponibles.filter(s => !mover.includes(s));
+      masSeleccionadas = masSeleccionadas.concat(mover);
+    } else {
+      const selEl = document.getElementById('masServicioSeleccionados');
+      const mover = todas ? masSeleccionadas.slice() : Array.from(selEl.selectedOptions).map(o=>o.value);
+      masSeleccionadas = masSeleccionadas.filter(s => !mover.includes(s));
+      masDisponibles = masDisponibles.concat(mover);
+    }
+    masDisponibles.sort((a,b)=> maestro.indexOf(a) - maestro.indexOf(b));
+    masSeleccionadas.sort((a,b)=> maestro.indexOf(a) - maestro.indexOf(b));
+    renderDualListboxMasivo();
+    actualizarFechaMasiva();
+  }
+
+  // Each empresa has an array of versions: {pm, desde, hasta (null = indefinido), lote,
+  // servicio}. Universo ampliado a las 10 empresas de ambulancia que el usuario controla en
+  // su Excel (mismo set que en la Pantalla 1 · Monitoreo).
+  // La carga inicial de datos (2026-06-01) se considera "Carga N° 1" y abarca dos Tipos de
+  // Servicio a la vez: Emergencia (9 empresas) y Traslado (Acudir, Paramedic, Vittal, Mas
+  // Vida y SUM) — muestra cómo un mismo N° de versión puede incluir más de un Tipo de
+  // Servicio, con una única fecha de vigencia compartida por todas las empresas y Tipos de
+  // Servicio que toca. La próxima carga masiva que se guarde queda como "Carga N° 2" (ver
+  // "proximoLote" más abajo). El resto de las empresas (URG, Sist Priv, Mijal, UCMQ,
+  // Medicardio) todavía no tienen ningún %OM cargado para Traslado — un estado válido, igual
+  // que el de "SUM" antes de su primera carga en cualquier Tipo de Servicio.
+  const empresas = [
+    {
+      empresa:"Acudir", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[
+        { pm:60, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" },
+        { pm:70, desde:"2026-06-01", hasta:null, lote:1, servicio:"Traslado" },
+      ]
+    },
+    {
+      empresa:"Mas Vida", mesa:"Mesa Metropolitana", filial:"La Plata",
+      versiones:[
+        { pm:18, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" },
+        { pm:3.5, desde:"2026-06-01", hasta:null, lote:1, servicio:"Traslado" },
+      ]
+    },
+    {
+      empresa:"Paramedic", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[
+        { pm:16, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" },
+        { pm:20, desde:"2026-06-01", hasta:null, lote:1, servicio:"Traslado" },
+      ]
+    },
+    {
+      empresa:"URG", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[ { pm:4, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" } ]
+    },
+    {
+      empresa:"Vittal", mesa:"Mesa Metropolitana", filial:"La Plata",
+      versiones:[
+        { pm:4, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" },
+        { pm:5, desde:"2026-06-01", hasta:null, lote:1, servicio:"Traslado" },
+      ]
+    },
+    {
+      empresa:"Sist Priv", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[ { pm:2, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" } ]
+    },
+    {
+      empresa:"Mijal", mesa:"Mesa Metropolitana", filial:"La Plata",
+      versiones:[ { pm:2, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" } ]
+    },
+    {
+      empresa:"UCMQ", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[ { pm:1, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" } ]
+    },
+    {
+      empresa:"Medicardio", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[ { pm:1, desde:"2026-06-01", hasta:null, lote:1, servicio:"Emergencia" } ]
+    },
+    {
+      empresa:"SUM", mesa:"Mesa Metropolitana", filial:"Metropolitana",
+      versiones:[ { pm:1.5, desde:"2026-06-01", hasta:null, lote:1, servicio:"Traslado" } ]
+    },
+  ];
+
+  const hoy = "2026-09-08"; // fecha actual del sistema (08/09/2026)
+
+  function fmt(d){
+    if(!d) return "—";
+    const [y,m,day] = d.split("-");
+    return `${day}/${m}/${y}`;
+  }
+
+  function estadoVersion(v){
+    if(v.desde > hoy) return "Programado";
+    if(v.hasta && v.hasta < hoy) return "Vencido";
+    return "Vigente";
+  }
+
+  // Versión de una empresa que estaría vigente en una fecha dada, DENTRO de un mismo Tipo
+  // de Servicio (la de mayor "desde" que sea <= fecha, dentro de ese Tipo de Servicio).
+  // Cada Tipo de Servicio es un %OM independiente de los demás, así que esta búsqueda
+  // siempre queda acotada a ese Tipo de Servicio puntual.
+  function vigenteEn(emp, fecha, servicio){
+    const candidatas = emp.versiones
+      .filter(v => v.servicio === servicio && v.desde <= fecha)
+      .sort((a,b)=> a.desde < b.desde ? 1 : -1);
+    return candidatas[0] || null;
+  }
+
+  // ---------- Carga masiva de %OM (varias empresas, una misma fecha de vigencia) ----------
+  // Mismo universo de empresas que la Pantalla 1 · Monitoreo, en el mismo orden.
+  const EMPRESAS_MASIVAS = ["Acudir","Mas Vida","Paramedic","URG","Vittal","Sist Priv","Mijal","UCMQ","Medicardio","SUM"];
+
+  function slugEmpresa(nombre){ return nombre.replace(/\s+/g, '_'); }
+  // Slug genérico para usar ids de registro (empresa+fecha) como id de elemento del DOM;
+  // a diferencia de slugEmpresa, evita colisiones cuando una misma empresa tiene más de
+  // un registro dentro de la misma versión (por ejemplo, la carga inicial de Acudir).
+  function slugId(str){ return str.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+  // Pinta las grillas de la carga masiva: una mini-grilla por cada Tipo de Servicio elegido
+  // en el selector de doble lista, cada una con una fila por empresa mostrando su %OM
+  // vigente en ESE Tipo de Servicio (a título informativo) y un input vacío ("Sin cambios")
+  // para el %OM nuevo — el %OM se define por separado en cada Tipo de Servicio.
+  function renderGridsMasivo(fecha, servicios){
+    const cont = document.getElementById('masGridsContainer');
+    if(!servicios.length){
+      cont.innerHTML = '';
+      return;
+    }
+    cont.innerHTML = servicios.map(servicio => `
+      <div class="reg-grupo-servicio">
+        <div class="reg-grupo-servicio-titulo">${servicio}</div>
+        <table class="history-table reg-grid">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th style="text-align:right;">%OM actual</th>
+              <th style="text-align:right;">%OM nuevo</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${EMPRESAS_MASIVAS.map(nombre=>{
+              const emp = empresas.find(e => e.empresa === nombre);
+              const vigente = emp ? vigenteEn(emp, fecha, servicio) : null;
+              const actualTxt = (vigente && typeof vigente.pm === 'number') ? vigente.pm + '%' : 'Sin objetivo definido';
+              return `
+                <tr>
+                  <td style="font-weight:600;">${nombre}</td>
+                  <td style="text-align:right;color:var(--text-muted);font-size:11px;">${actualTxt}</td>
+                  <td style="text-align:right;">
+                    <input type="number" min="0" max="100" step="1" id="mas_pm_${servicio}_${slugEmpresa(nombre)}"
+                      oninput="actualizarAvisoMasivo()" value="0" placeholder="Sin cambios"
+                      style="width:90px;text-align:right;border:1px solid var(--field-border);border-radius:5px;padding:6px 8px;font-size:12.5px;">
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `).join('');
+  }
+
+  // Vuelve a pintar las grillas cuando cambia la fecha o la selección de Tipos de Servicio
+  // (el %OM "actual" depende de ambos), pero conserva los valores nuevos que la persona ya
+  // haya tipeado en los Tipos de Servicio que siguen elegidos.
+  function actualizarFechaMasiva(){
+    const fecha = document.getElementById('masDesde').value || hoy;
+    const servicios = masSeleccionadas.slice();
+    const valoresPrevios = {};
+    servicios.forEach(servicio => EMPRESAS_MASIVAS.forEach(nombre=>{
+      const el = document.getElementById(`mas_pm_${servicio}_${slugEmpresa(nombre)}`);
+      if(el) valoresPrevios[`${servicio}||${nombre}`] = el.value;
+    }));
+    renderGridsMasivo(fecha, servicios);
+    servicios.forEach(servicio => EMPRESAS_MASIVAS.forEach(nombre=>{
+      const el = document.getElementById(`mas_pm_${servicio}_${slugEmpresa(nombre)}`);
+      const prev = valoresPrevios[`${servicio}||${nombre}`];
+      if(el && prev !== undefined) el.value = prev;
+    }));
+    actualizarAvisoMasivo();
+  }
+
+  // Lee del formulario qué empresas tienen un %OM nuevo tipeado, para cada Tipo de Servicio
+  // elegido. Devuelve un objeto { "Emergencia": {"Acudir":55,...}, "Traslado": {...} } solo
+  // con las combinaciones completadas.
+  function leerCambiosMasivos(servicios){
+    const cambios = {};
+    servicios.forEach(servicio=>{
+      cambios[servicio] = {};
+      EMPRESAS_MASIVAS.forEach(nombre=>{
+        const el = document.getElementById(`mas_pm_${servicio}_${slugEmpresa(nombre)}`);
+        if(!el) return;
+        const raw = el.value.trim();
+        if(raw === '') return;
+        const pm = parseFloat(raw);
+        if(!isNaN(pm)) cambios[servicio][nombre] = pm;
+      });
+    });
+    return cambios;
+  }
+
+  // Simula el total de %OM vigente al guardar la carga masiva completa, DENTRO de un Tipo de
+  // Servicio: para las empresas incluidas en "cambiosServicio" usa el valor nuevo; para el
+  // resto, su %OM vigente sin modificar a esa fecha en ese mismo Tipo de Servicio (así
+  // ninguna carga masiva puede hacer que ese Tipo de Servicio supere el 100%, se esté
+  // tocando a una empresa, a varias, o a todas a la vez).
+  function calcularTotalOMSimuladoMasivo(fecha, servicio, cambiosServicio){
+    let total = 0;
+    EMPRESAS_MASIVAS.forEach(nombre=>{
+      if(Object.prototype.hasOwnProperty.call(cambiosServicio, nombre)){
+        total += cambiosServicio[nombre];
+        return;
+      }
+      const emp = empresas.find(e => e.empresa === nombre);
+      if(!emp) return;
+      const v = vigenteEn(emp, fecha, servicio);
+      if(v && typeof v.pm === 'number') total += v.pm;
+    });
+    return total;
+  }
+
+  // Actualiza en vivo el indicador de totales de Nueva Versión, a medida que se completan
+  // %OM nuevos o se cambia la fecha de vigencia o la selección de Tipos de Servicio. Como una
+  // misma carga puede tocar varios Tipos de Servicio a la vez, se calcula un total por
+  // separado para cada uno. Ese mismo texto ("Total de Emergencias: X% - Total de
+  // Traslados: Y%") funciona a la vez como resumen y como indicador de si se puede guardar:
+  // se pinta en rojo mientras algún Tipo de Servicio no sume exactamente 100%, y en verde
+  // cuando todos los Tipos de Servicio incluidos ya suman 100% (el detalle de la regla del
+  // 100% está en el botón "?" del encabezado, no hace falta repetirlo acá en cada tipeo).
+  function actualizarAvisoMasivo(){
+    const fecha = document.getElementById('masDesde').value || hoy;
+    const servicios = masSeleccionadas.slice();
+    const resumen = document.getElementById('masResumenTotal');
+
+    if(!servicios.length){
+      resumen.textContent = 'Pasá a la derecha al menos un Tipo de Servicio para ver el total.';
+      resumen.style.color = 'var(--text-muted)';
+      return 0;
+    }
+
+    const cambios = leerCambiosMasivos(servicios);
+    const totales = servicios.map(servicio => ({
+      servicio,
+      total: calcularTotalOMSimuladoMasivo(fecha, servicio, cambios[servicio]),
+    }));
+    const conProblema = totales.filter(t => t.total !== 100);
+
+    resumen.textContent = totales
+      .map(t => `Total de ${PLURAL_SERVICIO[t.servicio] || t.servicio}: ${t.total}%`)
+      .join(' - ');
+    resumen.style.color = conProblema.length ? 'var(--critical)' : 'var(--good)';
+    return conProblema.length;
+  }
+
+  function abrirModalMasivo(){
+    const fecha = hoy;
+    document.getElementById('masDesde').value = fecha;
+    masDisponibles = NOMBRES_SERVICIO.slice();
+    masSeleccionadas = [];
+    renderDualListboxMasivo();
+    document.getElementById('masLoteNumero').textContent = 'N° ' + proximoLote;
+    actualizarFechaMasiva();
+    document.getElementById('modalMasivoOverlay').classList.add('open');
+  }
+
+  function cerrarModalMasivo(){
+    document.getElementById('modalMasivoOverlay').classList.remove('open');
+  }
+
+  function guardarMasivo(){
+    const fecha = document.getElementById('masDesde').value;
+    const servicios = masSeleccionadas.slice();
+    if(!fecha){
+      mostrarToast('Elegí la fecha de vigencia de la carga masiva.');
+      return;
+    }
+    if(!servicios.length){
+      mostrarToast('Pasá a la derecha al menos un Tipo de Servicio para la carga masiva.');
+      return;
+    }
+
+    const cambios = leerCambiosMasivos(servicios);
+    let totalRegistros = 0;
+    const empresasTocadas = new Set();
+    servicios.forEach(servicio=>{
+      Object.keys(cambios[servicio]).forEach(nombre=>{
+        totalRegistros++;
+        empresasTocadas.add(nombre);
+        const pm = cambios[servicio][nombre];
+        if(isNaN(pm) || pm < 0 || pm > 100){
+          mostrarToast(`El %OM de "${nombre}" (${servicio}) tiene que estar entre 0 y 100.`);
+          totalRegistros = -1;
+        }
+      });
+    });
+    if(totalRegistros === -1) return;
+    if(!totalRegistros){
+      mostrarToast('Completá el %OM nuevo de al menos una empresa en algún Tipo de Servicio.');
+      return;
+    }
+
+    // Cada Tipo de Servicio es su propio universo de %OM: se valida que sume exactamente
+    // el 100% de forma independiente en cada uno antes de guardar nada.
+    for(const servicio of servicios){
+      const totalSimulado = calcularTotalOMSimuladoMasivo(fecha, servicio, cambios[servicio]);
+      if(totalSimulado !== 100){
+        const detalle = totalSimulado > 100 ? 'supera el 100%' : 'no llega al 100%';
+        mostrarToast(`No se puede guardar la carga masiva: el total de %OM vigente para ${servicio} al ${fmt(fecha)} quedaría en ${totalSimulado}% (${detalle}). Tiene que sumar exactamente 100%.`);
+        return;
+      }
+    }
+
+    const loteActual = proximoLote;
+    servicios.forEach(servicio=>{
+      Object.keys(cambios[servicio]).forEach(nombre=>{
+        let emp = empresas.find(e => e.empresa === nombre);
+        if(!emp){
+          emp = { empresa: nombre, mesa: 'Mesa Metropolitana', filial: 'Metropolitana', versiones: [] };
+          empresas.push(emp);
+        }
+        emp.versiones.push({ pm: cambios[servicio][nombre], desde: fecha, hasta: null, lote: loteActual, servicio });
+        recomputeHastas(emp, servicio);
+      });
+    });
+    proximoLote++;
+
+    cerrarModalMasivo();
+    mostrarToast(`Nueva versión N° ${loteActual} guardada: ${totalRegistros} registro${totalRegistros===1?'':'s'} en ${empresasTocadas.size} empresa${empresasTocadas.size===1?'':'s'}, para ${servicios.join(' y ')} desde el ${fmt(fecha)}.`);
+    aplicarListado();
+  }
+
+  // Reordena por fecha y recalcula "hasta" de cada una en función de cuándo empieza la
+  // siguiente, para que nunca queden superpuestas — pero SOLO dentro de las versiones de la
+  // empresa que pertenecen al mismo Tipo de Servicio; las versiones de otros Tipos de
+  // Servicio de esa misma empresa no se tocan.
+  function recomputeHastas(emp, servicio){
+    const grupo = emp.versiones.filter(v => v.servicio === servicio);
+    grupo.sort((a,b)=> a.desde < b.desde ? -1 : 1);
+    grupo.forEach((v,i)=>{
+      if(i < grupo.length-1){
+        const next = new Date(grupo[i+1].desde+"T00:00:00");
+        v.hasta = new Date(next.getTime()-86400000).toISOString().slice(0,10);
+      } else {
+        v.hasta = null;
+      }
+    });
+  }
+
+  // Aplana el historial de versiones de todas las empresas en registros individuales:
+  // cada versión de cada empresa (para cada Tipo de Servicio) es una fila propia del listado.
+  function construirRegistros(){
+    const registros = [];
+    empresas.forEach(emp=>{
+      emp.versiones.forEach(v=>{
+        registros.push({
+          id: emp.empresa + '__' + v.servicio + '__' + v.desde,
+          empresa: emp.empresa,
+          mesa: emp.mesa,
+          filial: emp.filial,
+          servicio: v.servicio,
+          pm: v.pm,
+          desde: v.desde,
+          hasta: v.hasta,
+          estado: estadoVersion(v),
+          version: v.lote ?? null,
+          empRef: emp,
+          vRef: v,
+        });
+      });
+    });
+    return registros;
+  }
+
+  function obtenerRegistroPorId(id){
+    return construirRegistros().find(r => r.id === id);
+  }
+
+  const columnas = [
+    { key:'mesa',    label:'Mesa Operativa' },
+    { key:'filial',  label:'Filial' },
+    { key:'servicio', label:'T.Servicio' },
+    { key:'empresa', label:'Empresa' },
+    { key:'pm',      label:'%OM', numeric:true },
+    { key:'desde',   label:'Vigente desde', isDate:true },
+    { key:'hasta',   label:'Vigente hasta', isDate:true },
+    { key:'estado',  label:'Estado', isEstado:true },
+    { key:'version', label:'N° Versión' },
+  ];
+
+  let sortState = { key:'empresa', dir:1 };
+  let pageState = { page:1, size:5 };
+  let proximoLote = 2; // la carga inicial de datos (Emergencia + Traslado) ya ocupa la N° 1
+  let seleccionId = null;
+
+  function renderHeader(){
+    document.getElementById('headerRow').innerHTML = columnas.map(c=>{
+      const activo = sortState.key === c.key;
+      const flecha = activo ? (sortState.dir===1 ? '▲' : '▼') : '⇅';
+      return `<th onclick="cambiarOrden('${c.key}')">${c.label} <span class="lf-sort ${activo?'active':''}">${flecha}</span></th>`;
+    }).join('');
+  }
+
+  function cambiarOrden(key){
+    if(sortState.key === key){ sortState.dir *= -1; }
+    else { sortState = { key, dir:1 }; }
+    renderHeader();
+    aplicarListado();
+  }
+
+  function renderFilterRowOnce(){
+    const cols = columnas.map(c=>{
+      if(c.isEstado){
+        return `<td><select id="filt_${c.key}" onchange="aplicarListado()">
+          <option value="">Todo</option>
+          <option>Vigente</option>
+          <option>Programado</option>
+          <option>Vencido</option>
+        </select></td>`;
+      }
+      return `<td><input type="text" id="filt_${c.key}" oninput="aplicarListado()"></td>`;
+    }).join('');
+    document.getElementById('filterRow').innerHTML = cols;
+  }
+
+  function aplicarListado(){
+    let registros = construirRegistros();
+
+    columnas.forEach(c=>{
+      const el = document.getElementById('filt_'+c.key);
+      if(!el) return;
+      const val = el.value.trim().toLowerCase();
+      if(!val) return;
+      registros = registros.filter(r=>{
+        const campo = c.isDate ? fmt(r[c.key]) : String(r[c.key] ?? '');
+        return campo.toLowerCase().includes(val);
+      });
+    });
+
+    registros.sort((a,b)=>{
+      let av = a[sortState.key], bv = b[sortState.key];
+      if(sortState.key === 'pm'){
+        av = Number(av); bv = Number(bv);
+      } else if(sortState.key === 'hasta'){
+        // "Vigente hasta" en null significa "todavía vigente, sin fecha de fin" — para que
+        // el orden tenga sentido (y no se rompa comparando null contra una fecha), se trata
+        // como la fecha más lejana posible, en vez de quedar afuera de la comparación.
+        av = av || '9999-12-31'; bv = bv || '9999-12-31';
+      }
+      if(av < bv) return -1 * sortState.dir;
+      if(av > bv) return 1 * sortState.dir;
+      return 0;
+    });
+
+    // Si la fila seleccionada quedó fuera de los filtros aplicados, se deselecciona.
+    if(seleccionId && !registros.some(r => r.id === seleccionId)){
+      seleccionId = null;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(registros.length / pageState.size));
+    if(pageState.page > totalPages) pageState.page = totalPages;
+    const start = (pageState.page - 1) * pageState.size;
+    renderTbody(registros.slice(start, start + pageState.size));
+    renderPaginacion(totalPages);
+    actualizarBotones();
+  }
+
+  function renderTbody(items){
+    const tbody = document.getElementById('tablaEmpresas');
+    if(!items.length){
+      tbody.innerHTML = `<tr class="lf-empty-row"><td colspan="${columnas.length}">No se encontraron registros con los filtros aplicados.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = items.map(r=>{
+      const color = r.estado==='Vigente' ? 'var(--good)' : (r.estado==='Programado' ? 'var(--warn)' : 'var(--text-muted)');
+      return `
+        <tr class="${r.id===seleccionId?'selected':''}" onclick="seleccionarFila('${r.id}')">
+          <td style="text-align:left;">${r.mesa}</td>
+          <td style="text-align:left;">${r.filial}</td>
+          <td style="text-align:left;">${r.servicio}</td>
+          <td style="text-align:left;font-weight:600;">${r.empresa}</td>
+          <td><strong>${r.pm}%</strong></td>
+          <td>${fmt(r.desde)}</td>
+          <td>${fmt(r.hasta)}</td>
+          <td><span style="color:${color};font-weight:700;">● ${r.estado}</span></td>
+          <td>${r.version ? ('N° ' + r.version) : '—'}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function seleccionarFila(id){
+    seleccionId = (seleccionId === id) ? null : id;
+    aplicarListado();
+  }
+
+  function actualizarBotones(){
+    document.getElementById('btnVer').disabled = !seleccionId;
+  }
+
+  function renderPaginacion(totalPages){
+    const html = `
+      <button class="lf-pg-btn" ${pageState.page===1?'disabled':''} onclick="irPagina(1)">«</button>
+      <button class="lf-pg-btn" ${pageState.page===1?'disabled':''} onclick="irPagina(${pageState.page-1})">‹</button>
+      ${Array.from({length: totalPages}, (_,i)=>i+1).map(p=>`
+        <button class="lf-pg-btn ${p===pageState.page?'active':''}" onclick="irPagina(${p})">${p}</button>
+      `).join('')}
+      <button class="lf-pg-btn" ${pageState.page===totalPages?'disabled':''} onclick="irPagina(${pageState.page+1})">›</button>
+      <button class="lf-pg-btn" ${pageState.page===totalPages?'disabled':''} onclick="irPagina(${totalPages})">»</button>
+      <select class="lf-pg-size" onchange="cambiarTamano(this.value)">
+        ${[5,10,25,50].map(s=>`<option value="${s}" ${s===pageState.size?'selected':''}>${s}</option>`).join('')}
+      </select>
+    `;
+    document.getElementById('pagTop').innerHTML = html;
+    document.getElementById('pagBottom').innerHTML = html;
+  }
+
+  function irPagina(p){ pageState.page = p; aplicarListado(); }
+  function cambiarTamano(s){ pageState.size = Number(s); pageState.page = 1; aplicarListado(); }
+
+  // ---------- Editar versión completa (edita en bloque, para todas las empresas que
+  // comparten un N° de versión, su %OM y/o su fecha de vigencia — mismo diseño que
+  // "Carga masiva": una mini-grilla Empresa / %OM actual / %OM nuevo por cada Tipo de
+  // Servicio que incluya esa versión, y una única fecha de vigencia compartida) ----------
+
+  function abrirModalEditarVersion(){
+    const versiones = listaVersionesDisponibles();
+    const sel = document.getElementById('editVersionSelect');
+    sel.innerHTML = versiones.length
+      ? versiones.map(v => `<option value="${v.lote}">N° ${v.lote} — ${v.servicioLabel} (${v.registros.length} registro${v.registros.length===1?'':'s'})</option>`).join('')
+      : '<option value="">No hay versiones cargadas</option>';
+    document.getElementById('modalEditarVersionOverlay').classList.add('open');
+    actualizarGridEditarVersion();
+  }
+
+  function cerrarModalEditarVersion(){
+    document.getElementById('modalEditarVersionOverlay').classList.remove('open');
+  }
+
+  // Repinta las mini-grillas (una por Tipo de Servicio) con los registros de la versión
+  // elegida, precargadas con el %OM actual de cada empresa, y la fecha de vigencia compartida
+  // por todos esos registros (toda versión, al haber salido de una única carga masiva,
+  // comparte una sola fecha de vigencia).
+  function actualizarGridEditarVersion(){
+    const lote = Number(document.getElementById('editVersionSelect').value);
+    const cont = document.getElementById('editGridsContainer');
+    const desdeInput = document.getElementById('editDesde');
+    const badge = document.getElementById('editLoteNumero');
+
+    if(!lote){
+      cont.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-style:italic;padding:16px;">No hay ninguna versión para editar.</div>`;
+      desdeInput.value = '';
+      badge.textContent = '—';
+      document.getElementById('editResumenTotal').textContent = '';
+      document.getElementById('editOmWarning').style.display = 'none';
+      return;
+    }
+
+    badge.textContent = 'N° ' + lote;
+    const registros = construirRegistros().filter(r => r.version === lote);
+    const servicios = [...new Set(registros.map(r => r.servicio))];
+    desdeInput.value = registros[0] ? registros[0].desde : '';
+
+    cont.innerHTML = servicios.map(servicio => `
+      <div class="reg-grupo-servicio">
+        <div class="reg-grupo-servicio-titulo">${servicio}</div>
+        <table class="history-table reg-grid">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th style="text-align:right;">%OM actual</th>
+              <th style="text-align:right;">%OM nuevo</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${registros.filter(r => r.servicio === servicio).map(r => `
+              <tr>
+                <td style="font-weight:600;">${r.empresa}</td>
+                <td style="text-align:right;color:var(--text-muted);font-size:11px;">${r.pm}%</td>
+                <td style="text-align:right;">
+                  <input type="number" min="0" max="100" step="1" id="edit_pm_${slugId(r.id)}" value="${r.pm}"
+                    oninput="actualizarAvisoEditarVersion()"
+                    style="width:90px;text-align:right;border:1px solid var(--field-border);border-radius:5px;padding:6px 8px;font-size:12.5px;">
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `).join('');
+
+    actualizarAvisoEditarVersion();
+  }
+
+  // Lee de las grillas los valores tipeados para cada registro de la versión elegida, junto
+  // con la fecha de vigencia compartida del campo "Vigente desde".
+  function leerCambiosEditarVersion(){
+    const lote = Number(document.getElementById('editVersionSelect').value);
+    if(!lote) return [];
+    const fecha = document.getElementById('editDesde').value;
+    return construirRegistros().filter(r => r.version === lote).map(r=>{
+      const pmEl = document.getElementById('edit_pm_' + slugId(r.id));
+      if(!pmEl) return null;
+      return { r, pm: parseFloat(pmEl.value), desde: fecha };
+    }).filter(Boolean);
+  }
+
+  // Aplica "cambios" ({r, pm, desde}) sobre los datos reales, ejecuta fn() para poder
+  // reusar vigenteEn/recomputeHastas tal como quedarían, y revierte todo antes de salir.
+  // Se usa tanto para la vista previa en vivo como, si la validación del 100% falla, al guardar.
+  // Un lote puede abarcar más de un Tipo de Servicio (carga masiva con varios Tipos de
+  // Servicio a la vez), así que "cambios" se agrupa y el recálculo de "hasta" se hace por
+  // cada Tipo de Servicio afectado, no uno solo compartido por todo el lote.
+  function conCambiosDeEdicionAplicados(cambios, fn){
+    const grupos = agruparPorServicio(cambios, c => c.r.servicio);
+    const originales = cambios.map(c => ({ vRef: c.r.vRef, pm: c.r.vRef.pm, desde: c.r.vRef.desde }));
+    cambios.forEach(c => { c.r.vRef.pm = c.pm; c.r.vRef.desde = c.desde; });
+    grupos.forEach(g => new Set(g.items.map(c => c.r.empRef)).forEach(emp => recomputeHastas(emp, g.servicio)));
+    const resultado = fn();
+    originales.forEach(o => { o.vRef.pm = o.pm; o.vRef.desde = o.desde; });
+    grupos.forEach(g => new Set(g.items.map(c => c.r.empRef)).forEach(emp => recomputeHastas(emp, g.servicio)));
+    return resultado;
+  }
+
+  // Total de %OM vigente en una fecha dada, DENTRO de un Tipo de Servicio, con los datos
+  // reales tal como están ahora (sin ningún cambio de la edición aplicado).
+  function totalOMVigenteEn(fecha, servicio){
+    let total = 0;
+    empresas.forEach(emp=>{
+      const v = vigenteEn(emp, fecha, servicio);
+      if(v && typeof v.pm === 'number') total += v.pm;
+    });
+    return total;
+  }
+
+  // Peor total de %OM vigente, entre todas las fechas involucradas en "cambios", si esos
+  // cambios se guardaran. A diferencia de la carga masiva (que siempre crea versiones
+  // nuevas hacia adelante), acá se puede estar editando una versión con fechas históricas
+  // (por ejemplo la carga inicial, N° 1) donde el total en esa fecha ya podía superar el
+  // 100% desde antes de esta edición (la carga inicial de Emergencia, por ejemplo, ya suma
+  // más del 100% entre sus 9 empresas). Por eso solo se bloquea si la edición EMPEORA el
+  // total respecto de cómo ya estaba esa fecha, no por superar el 100% a secas.
+  function peorTotalTrasEdicion(cambios){
+    if(!cambios.length) return { total:0, fecha:null, servicio:null, empeora:false };
+    // Un lote puede abarcar más de un Tipo de Servicio: cada uno es su propio universo de
+    // %OM, así que se arma una combinación (servicio, fecha) por cada uno y se valida de
+    // forma independiente.
+    const grupos = agruparPorServicio(cambios, c => c.r.servicio);
+    const combinaciones = [];
+    grupos.forEach(g=>{
+      const fechas = [...new Set(g.items.map(c => c.desde).filter(Boolean))];
+      fechas.forEach(fecha => combinaciones.push({ servicio: g.servicio, fecha }));
+    });
+    const totalesAntes = combinaciones.map(c => ({ ...c, antes: totalOMVigenteEn(c.fecha, c.servicio) }));
+
+    return conCambiosDeEdicionAplicados(cambios, ()=>{
+      let peor = 0, peorFecha = null, peorServicio = null, empeora = false;
+      totalesAntes.forEach(c=>{
+        const total = totalOMVigenteEn(c.fecha, c.servicio);
+        if(total > 100 && total > c.antes && total > peor){
+          peor = total; peorFecha = c.fecha; peorServicio = c.servicio; empeora = true;
+        }
+      });
+      return { total: peor, fecha: peorFecha, servicio: peorServicio, empeora };
+    });
+  }
+
+  function actualizarAvisoEditarVersion(){
+    const cambios = leerCambiosEditarVersion();
+    const aviso = document.getElementById('editOmWarning');
+    const resumen = document.getElementById('editResumenTotal');
+
+    if(!cambios.length){
+      resumen.textContent = '';
+      aviso.style.display = 'none';
+      return;
+    }
+
+    const invalidos = cambios.filter(c => isNaN(c.pm) || c.pm < 0 || c.pm > 100 || !c.desde);
+    if(invalidos.length){
+      aviso.style.display = 'flex';
+      aviso.innerHTML = `<span>⚠️</span><span>Completá un %OM (0-100) válido para: ${invalidos.map(c=>c.r.empresa).join(', ')}, y una fecha de vigencia para la versión.</span>`;
+      resumen.textContent = '';
+      return;
+    }
+
+    const { total, fecha, servicio, empeora } = peorTotalTrasEdicion(cambios);
+    if(empeora){
+      aviso.style.display = 'flex';
+      aviso.innerHTML = `<span>⚠️</span><span>Con estos valores, el total de %OM vigente para <strong>${servicio}</strong> al ${fmt(fecha)} quedaría en <strong>${total}%</strong> — supera el 100% y es más alto que el que ya había en esa fecha. Ajustá uno o más valores antes de guardar.</span>`;
+    } else {
+      aviso.style.display = 'none';
+    }
+    resumen.textContent = empeora
+      ? `Total de %OM vigente si guardo estos cambios: ${total}% al ${fmt(fecha)} (${servicio}).`
+      : `Los cambios no hacen que el total de %OM vigente supere, en ninguna fecha involucrada, al que ya tenía antes de esta edición.`;
+    resumen.style.color = empeora ? 'var(--critical)' : 'var(--good)';
+  }
+
+  function guardarEdicionVersion(){
+    const lote = Number(document.getElementById('editVersionSelect').value);
+    if(!lote) return;
+
+    const cambios = leerCambiosEditarVersion();
+    if(!cambios.length) return;
+
+    const invalidos = cambios.filter(c => isNaN(c.pm) || c.pm < 0 || c.pm > 100 || !c.desde);
+    if(invalidos.length){
+      mostrarToast(`Completá un %OM (0-100) válido para: ${invalidos.map(c=>c.r.empresa).join(', ')}, y una fecha de vigencia para la versión.`);
+      return;
+    }
+
+    const { total, fecha, servicio, empeora } = peorTotalTrasEdicion(cambios);
+    if(empeora){
+      mostrarToast(`No se puede guardar: el total de %OM vigente para ${servicio} al ${fmt(fecha)} quedaría en ${total}% (supera el 100% y es más alto que el que ya había en esa fecha). Ajustá uno o más valores.`);
+      return;
+    }
+
+    const gruposCambios = agruparPorServicio(cambios, c => c.r.servicio);
+    cambios.forEach(c => { c.r.vRef.pm = c.pm; c.r.vRef.desde = c.desde; });
+    gruposCambios.forEach(g => new Set(g.items.map(c => c.r.empRef)).forEach(emp => recomputeHastas(emp, g.servicio)));
+
+    const cantEmpresas = new Set(cambios.map(c => c.r.empresa)).size;
+    cerrarModalEditarVersion();
+    seleccionId = null;
+    mostrarToast(`Versión N° ${lote} actualizada: ${cambios.length} registro${cambios.length===1?'':'s'} de ${cantEmpresas} empresa${cantEmpresas===1?'':'s'}.`);
+    aplicarListado();
+  }
+
+  // ---------- Modal Ver (solo lectura) ----------
+  function abrirVer(){
+    if(!seleccionId) return;
+    const r = obtenerRegistroPorId(seleccionId);
+    if(!r) return;
+    document.getElementById('verTitulo').textContent = 'Ver registro de %OM';
+    const filas = [
+      ['Prestador / Empresa', r.empresa],
+      ['Mesa Operativa', r.mesa],
+      ['Filial', r.filial],
+      ['Tipo de Servicio', r.servicio],
+      ['%OM', r.pm + '%'],
+      ['Vigente desde', fmt(r.desde)],
+      ['Vigente hasta', fmt(r.hasta)],
+      ['Estado', r.estado],
+      ['N° de versión', r.version ? ('N° ' + r.version) : '— (carga inicial)'],
+    ];
+    document.getElementById('verTabla').innerHTML = filas.map(([label, valor])=>`
+      <tr>
+        <td class="reg-label">${label}:</td>
+        <td class="reg-field${valor ? '' : ' reg-empty'}">${valor || '—'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('verOverlay').classList.add('open');
+  }
+  function cerrarVer(){
+    document.getElementById('verOverlay').classList.remove('open');
+  }
+
+  // ---------- Borrar versión completa (elimina de una vez todos los registros que
+  // comparten un mismo N° de versión, en todas las empresas donde esté cargado) ----------
+
+  // Agrupa los registros vigentes por N° de versión: [{lote, registros:[...]}], del más
+  // reciente al más antiguo. Como una misma carga masiva puede tocar varios Tipos de
+  // Servicio a la vez (ver dual-listbox de Carga masiva), un lote puede incluir más de un
+  // Tipo de Servicio — se listan todos, separados por "y".
+  function listaVersionesDisponibles(){
+    const registros = construirRegistros();
+    const porLote = {};
+    registros.forEach(r=>{
+      if(!r.version) return;
+      (porLote[r.version] = porLote[r.version] || []).push(r);
+    });
+    return Object.keys(porLote)
+      .map(Number)
+      .sort((a,b)=> b - a)
+      .map(lote => {
+        const regs = porLote[lote];
+        const servicios = [...new Set(regs.map(r => r.servicio))];
+        return {
+          lote,
+          registros: regs,
+          servicios,
+          servicioLabel: servicios.join(' y '),
+        };
+      });
+  }
+
+  // Empresas (identificadas junto con su Tipo de Servicio) cuyos registros dentro de
+  // "registros" cubren el 100% de las versiones que tenían cargadas en ESE Tipo de Servicio
+  // puntual — es decir, quedarían sin ningún %OM ahí (una empresa sin ninguna versión en un
+  // Tipo de Servicio es un estado válido: el mismo estado inicial de "SUM" antes de su
+  // primera carga). Como un lote puede abarcar varios Tipos de Servicio a la vez, se agrupa
+  // por empresa + Tipo de Servicio, no solo por empresa. Esto ya no bloquea el borrado, solo
+  // se usa para avisar antes de confirmar.
+  function empresasQueQuedanSinVersion(registros){
+    const porGrupo = {};
+    registros.forEach(r=>{
+      const clave = r.empresa + '||' + r.servicio;
+      (porGrupo[clave] = porGrupo[clave] || []).push(r);
+    });
+    const resultado = [];
+    Object.values(porGrupo).forEach(regs=>{
+      const { empresa, servicio } = regs[0];
+      const totalEnGrupo = regs[0].empRef.versiones.filter(v => v.servicio === servicio).length;
+      if(regs.length >= totalEnGrupo){
+        resultado.push(`${empresa} (${servicio})`);
+      }
+    });
+    return resultado;
+  }
+
+  function abrirModalBorrarVersion(){
+    const versiones = listaVersionesDisponibles();
+    const sel = document.getElementById('borrarVersionSelect');
+    sel.innerHTML = versiones.length
+      ? versiones.map(v => `<option value="${v.lote}">N° ${v.lote} — ${v.servicioLabel} (${v.registros.length} registro${v.registros.length===1?'':'s'})</option>`).join('')
+      : '<option value="">No hay versiones cargadas</option>';
+    document.getElementById('modalBorrarVersionOverlay').classList.add('open');
+    actualizarPreviewBorrarVersion();
+  }
+
+  function cerrarModalBorrarVersion(){
+    document.getElementById('modalBorrarVersionOverlay').classList.remove('open');
+  }
+
+  function actualizarPreviewBorrarVersion(){
+    const lote = Number(document.getElementById('borrarVersionSelect').value);
+    const btn = document.getElementById('btnConfirmarBorrarVersion');
+    const aviso = document.getElementById('borrarVersionWarning');
+    const resumen = document.getElementById('borrarVersionResumen');
+    const tbody = document.getElementById('borrarVersionPreviewBody');
+
+    if(!lote){
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);font-style:italic;padding:16px;">No hay ninguna versión para eliminar.</td></tr>`;
+      resumen.textContent = '';
+      aviso.style.display = 'none';
+      btn.disabled = true;
+      return;
+    }
+
+    const registros = construirRegistros().filter(r => r.version === lote);
+    tbody.innerHTML = registros.map(r => `
+      <tr>
+        <td style="text-align:left;font-weight:600;">${r.empresa}</td>
+        <td style="text-align:left;color:var(--text-muted);">${r.servicio}</td>
+        <td style="text-align:right;"><strong>${r.pm}%</strong></td>
+        <td style="text-align:right;">${fmt(r.desde)}</td>
+      </tr>
+    `).join('');
+
+    const quedanSinVersion = empresasQueQuedanSinVersion(registros);
+    const cantEmpresas = new Set(registros.map(r => r.empresa)).size;
+
+    if(quedanSinVersion.length){
+      aviso.style.display = 'flex';
+      aviso.innerHTML = `<span>ℹ️</span><span>Esta acción va a dejar a <strong>${quedanSinVersion.join(', ')}</strong> sin ningún %OM cargado (igual que una empresa que todavía no tuvo su primera carga). Podés darle de alta una versión nueva cuando quieras desde "Nueva Versión".</span>`;
+    } else {
+      aviso.style.display = 'none';
+    }
+    btn.disabled = false;
+
+    resumen.textContent = `Se eliminarán ${registros.length} registro${registros.length===1?'':'s'} de ${cantEmpresas} empresa${cantEmpresas===1?'':'s'} (versión N° ${lote}).`;
+    resumen.style.color = 'var(--text)';
+  }
+
+  // Abre el modal de confirmación propio de la pantalla (en vez del confirm() nativo del
+  // navegador, que algunos entornos embebidos/webview bloquean o ignoran sin avisar, dejando
+  // el botón "Eliminar versión completa" sin hacer nada visible). El lote a eliminar se relee
+  // del select al ejecutar, así que no hace falta guardarlo aparte.
+  function confirmarBorrarVersion(){
+    const lote = Number(document.getElementById('borrarVersionSelect').value);
+    if(!lote) return;
+
+    const registros = construirRegistros().filter(r => r.version === lote);
+    if(!registros.length) return;
+
+    const quedanSinVersion = empresasQueQuedanSinVersion(registros);
+    const notaExtra = quedanSinVersion.length
+      ? ` Esto va a dejar sin ningún %OM cargado a: ${quedanSinVersion.join(', ')}.`
+      : '';
+    const cantEmpresas = new Set(registros.map(r => r.empresa)).size;
+    document.getElementById('confirmarBorrarMensaje').textContent =
+      `¿Eliminar la versión N° ${lote} completa? Se van a borrar ${registros.length} registro${registros.length===1?'':'s'} de ${cantEmpresas} empresa${cantEmpresas===1?'':'s'}.${notaExtra}`;
+    document.getElementById('modalConfirmarBorrarOverlay').classList.add('open');
+  }
+
+  function cerrarModalConfirmarBorrar(){
+    document.getElementById('modalConfirmarBorrarOverlay').classList.remove('open');
+  }
+
+  // Ejecuta el borrado ya confirmado en el modal propio (ver confirmarBorrarVersion arriba).
+  function ejecutarBorrarVersion(){
+    const lote = Number(document.getElementById('borrarVersionSelect').value);
+    cerrarModalConfirmarBorrar();
+    if(!lote) return;
+
+    const registros = construirRegistros().filter(r => r.version === lote);
+    if(!registros.length) return;
+    const cantEmpresas = new Set(registros.map(r => r.empresa)).size;
+
+    // Un lote puede abarcar más de un Tipo de Servicio (carga masiva con varios Tipos de
+    // Servicio a la vez), así que se recalculan los "hasta" por cada Tipo de Servicio
+    // afectado, no uno solo compartido por todo el lote.
+    const gruposRegistros = agruparPorServicio(registros, r => r.servicio);
+    registros.forEach(r=>{
+      r.empRef.versiones = r.empRef.versiones.filter(v => v !== r.vRef);
+    });
+    gruposRegistros.forEach(g => {
+      new Set(g.items.map(r => r.empRef)).forEach(emp => recomputeHastas(emp, g.servicio));
+    });
+
+    seleccionId = null;
+    cerrarModalBorrarVersion();
+    mostrarToast(`Versión N° ${lote} eliminada: ${registros.length} registro${registros.length===1?'':'s'} de ${cantEmpresas} empresa${cantEmpresas===1?'':'s'}.`);
+    aplicarListado();
+  }
+
+  function mostrarToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3200);
+  }
+
+  // ---------- Ayuda: textos explicativos detrás de botones "?" ----------
+  // Abre/cierra el popover de ayuda con el id dado, cerrando cualquier otro que haya quedado
+  // abierto. "event.stopPropagation()" evita que el listener de "click afuera" (más abajo) lo
+  // cierre en el mismo click que lo abre.
+  function toggleHelp(id, event){
+    if(event) event.stopPropagation();
+    document.querySelectorAll('.help-popover.open').forEach(p=>{
+      if(p.id !== id) p.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+  }
+  document.addEventListener('click', (e)=>{
+    if(e.target.closest('.help-wrap')) return;
+    document.querySelectorAll('.help-popover.open').forEach(p=>p.classList.remove('open'));
+  });
+
+  function abrirModalAyuda(){
+    document.getElementById('modalAyudaOverlay').classList.add('open');
+  }
+  function cerrarModalAyuda(){
+    document.getElementById('modalAyudaOverlay').classList.remove('open');
+  }
+
+  renderHeader();
+  renderFilterRowOnce();
+  aplicarListado();
+</script>
+</body>
+</html>
